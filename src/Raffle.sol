@@ -35,6 +35,8 @@ contract Raffle {
     function pickWinner() public {
         // check to see if enough time has passed
         if ((block.timestamp - s_lastTimeStamp) < interval) revert();
+
+        //get our random number
     }
 
     /**

@@ -14,7 +14,12 @@ contract Raffle is VRFConsumerBaseV2 {
     /** Errors */
     error Raffle__SendMoreToEnterRaffle();
     error Raffle__TransferFailed();
+    error Raffle__RaffleNotOpen();
 
+    /** Type Declarations */
+    enum RaffleState {OPEN, CALCULATING}
+
+    /** State Variables */
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
     uint256 private immutable i_entranceFee;
@@ -26,6 +31,7 @@ contract Raffle is VRFConsumerBaseV2 {
     uint256 private s_lastTimeStamp;
     address private s_recentWinner;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
+    RaffleState private s_raffleState;
 
     event RaffleEntered(address indexed player);
 
@@ -36,11 +42,15 @@ contract Raffle is VRFConsumerBaseV2 {
         i_keyhash = gasLane;
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
+
         s_lastTimeStamp = block.timestamp;
+        s_raffleState = RaffleState.OPEN;
     }
 
     function enterRaffle() external payable {
         if(msg.value < i_entranceFee) revert Raffle__SendMoreToEnterRaffle();
+        
+        if(s_raffleState != RaffleState.OPEN) revert Raffle__RaffleNotOpen();
 
         s_players.push(payable(msg.sender));
 
@@ -50,6 +60,8 @@ contract Raffle is VRFConsumerBaseV2 {
     function pickWinner() public {
         // check to see if enough time has passed
         if ((block.timestamp - s_lastTimeStamp) > i_interval) revert();
+        
+        s_raffleState = RaffleState.CALCULATING;
 
         uint256 requestId = i_vrfCoordinator.requestRandomWords({
             keyHash : i_keyhash,
@@ -64,6 +76,7 @@ contract Raffle is VRFConsumerBaseV2 {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
         s_recentWinner = recentWinner;
+        s_raffleState = RaffleState.OPEN;
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
         if(!success) revert Raffle__TransferFailed();
     }

@@ -72,7 +72,7 @@ contract Raffle is VRFConsumerBaseV2 {
             numWords : NUM_WORDS
         });
     }
-    
+
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
@@ -82,10 +82,10 @@ contract Raffle is VRFConsumerBaseV2 {
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
+        emit WinnerPicked(recentWinner);
+
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
         if(!success) revert Raffle__TransferFailed();
-        
-        emit WinnerPicked(recentWinner);
     }
 
     /**

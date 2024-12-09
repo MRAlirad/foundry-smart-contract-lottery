@@ -57,11 +57,34 @@ contract Raffle is VRFConsumerBaseV2 {
 
         emit RaffleEntered(msg.sender);
     }
+    
+    /**
+        * @dev This is the function that the Chainlink Keeper nodes call
+        * they look for `upkeepNeeded` to return True.
+        * the following should be true for this to return true:
+        * 1. The time interval has passed between raffle runs.
+        * 2. The lottery is open.
+        * 3. The contract has ETH.
+        * 4. There are players registered.
+        * 5. Implicity, your subscription is funded with LINK.
+    */
+    function checkUpkeep(bytes memory /* checkData */) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
+        bool isOpen = s_raffleState == RaffleState.OPEN;
+        bool timePassed = ((block.timestamp - s_lastTimeStamp) >= i_interval);
+        bool hasPlayers = s_players.length > 0;
+        bool hasBalance = address(this).balance > 0;
 
-    function pickWinner() public {
-        // check to see if enough time has passed
-        if ((block.timestamp - s_lastTimeStamp) > i_interval) revert();
-        
+        upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers);
+        return (upkeepNeeded, "0x0");
+    }
+
+    // 1. Get a random number
+    // 2. Use the random number to pick a player
+    // 3. Automatically called
+    function performUpkeep(bytes calldata /* performData */) external {
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        if(!upkeepNeeded) revert();
+
         s_raffleState = RaffleState.CALCULATING;
 
         uint256 requestId = i_vrfCoordinator.requestRandomWords({

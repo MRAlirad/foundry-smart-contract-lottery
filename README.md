@@ -1218,3 +1218,11 @@ contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
 ```
 
 Now let's call a `forge build` to see if everything is ok.
+
+## Custom Error with parameters
+
+Using a basic `revert()` statement may not provide evidence on why a transaction failed. A better approach is to define custom errors by combining the **contract name** with a **description**, such as `Raffle__UpkeepNotNeeded()`. Additionally, including **parameters** can offer more detailed information about the cause of the transaction failure.
+
+```Solidity
+Raffle__UpkeepNotNeeded(address balance, uint256 length, uint256 raffleState);
+```

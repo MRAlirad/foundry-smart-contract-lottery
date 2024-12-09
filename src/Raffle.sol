@@ -15,6 +15,7 @@ contract Raffle is VRFConsumerBaseV2 {
     error Raffle__SendMoreToEnterRaffle();
     error Raffle__TransferFailed();
     error Raffle__RaffleNotOpen();
+    error Raffle__UpkeepNotNeeded(uint256 balance, uint256 playersLength, uint256 raffleState);
 
     /** Type Declarations */
     enum RaffleState {OPEN, CALCULATING}
@@ -83,11 +84,11 @@ contract Raffle is VRFConsumerBaseV2 {
     // 3. Automatically called
     function performUpkeep(bytes calldata /* performData */) external {
         (bool upkeepNeeded, ) = checkUpkeep("");
-        if(!upkeepNeeded) revert();
+        if(!upkeepNeeded) revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
 
         s_raffleState = RaffleState.CALCULATING;
 
-        uint256 requestId = i_vrfCoordinator.requestRandomWords({
+        /** uint256 requestId = */ i_vrfCoordinator.requestRandomWords({
             keyHash : i_keyhash,
             subId: i_subscriptionId,
             minimumRequestConfirmations : REQUEST_CONFIRMATIONS,
@@ -96,7 +97,7 @@ contract Raffle is VRFConsumerBaseV2 {
         });
     }
 
-    function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
+    function fulfillRandomWords(uint256 /*requestId*/, uint256[] memory randomWords) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable recentWinner = s_players[indexOfWinner];
         s_recentWinner = recentWinner;

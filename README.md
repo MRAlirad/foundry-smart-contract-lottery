@@ -1847,3 +1847,13 @@ We start by pranking the PLAYER, then properly calling the `enterRaffle` functio
 Test it with the following command: `forge test --mt testRaffleRecordsPlayerWhenTheyEnter`.
 
 Amazing work! Let's continue in the next lesson! We are going to learn how to test events in Foundry.
+
+## Headers
+
+To effortlessly create elegant **function** or **section headers** in your contract, you can use the [headers tool](https://github.com/transmissions11/headers) from transmission11. This tool generates code such as:
+
+```js
+/*//////////////////////////////////////////////////////////////
+                           ENTER RAFFLE
+//////////////////////////////////////////////////////////////*/
+```

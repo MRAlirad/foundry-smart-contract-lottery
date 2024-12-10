@@ -42,6 +42,10 @@ contract HelperConfig is Script, CodeConstances {
         else revert HelperConfig__InvalidChainId();
     }
 
+    function getConfig() public returns (NetworkConfig memory) {
+        return getConfigByChainId(block.chainid);
+    }
+
     function getSepoliaEthConfig() public pure returns (NetworkConfig memory) {
         return NetworkConfig({
             entranceFee: 0.01 ether,
@@ -52,7 +56,7 @@ contract HelperConfig is Script, CodeConstances {
             subscriptionId: 0
         });
     }
-    
+
     function getOrCreateAnvilEthConfig() public returns (NetworkConfig memory) {
         // check to see if we set an active network config
         if(localNetworkConfig.vrfCoordinator != address(0))
@@ -60,12 +64,12 @@ contract HelperConfig is Script, CodeConstances {
 
         // Deploy mocks and such
         vm.startBroadcast();
-        VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(
-            MOCK_BASE_FEE,
-            MOCK_GAS_PRICE_LINK,
-            MOCK_WEI_PER_UNIT_LINK,
-        );
-        vm.stopBropadcast();
+        VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock({
+            _baseFee : MOCK_BASE_FEE,
+            _gasPrice : MOCK_GAS_PRICE_LINK,
+            _weiPerUnitLink : MOCK_WEI_PER_UNIT_LINK
+        });
+        vm.stopBroadcast();
 
         localNetworkConfig = NetworkConfig({
             entranceFee: 0.01 ether,

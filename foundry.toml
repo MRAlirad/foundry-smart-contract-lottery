@@ -6,6 +6,10 @@ remappings = [
     '@chainlink/=lib/chainlink/contracts/',
     '@solmate=lib/solmate/src/'
 ]
+fs_permissions = [
+    { access = "read", path = "./broadcast" },
+    { access = "read", path = "./reports" },
+]
 
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

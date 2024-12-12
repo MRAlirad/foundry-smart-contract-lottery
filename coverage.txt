@@ -1,0 +1,17 @@
+Compiling 49 files with Solc 0.8.19
+Solc 0.8.19 finished in 3.90s
+Compiler run successful!
+Analysing contracts...
+Running tests...
+
+Ran 1 test for test/unit/RaffleTest.t.sol:RaffleTest
+[FAIL: setup failed: InvalidSubscription()] setUp() (gas: 0)
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 353.40ms (0.00ns CPU time)
+
+Ran 1 test suite in 354.59ms (353.40ms CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/unit/RaffleTest.t.sol:RaffleTest
+[FAIL: setup failed: InvalidSubscription()] setUp() (gas: 0)
+
+Encountered a total of 1 failing tests, 0 tests succeeded

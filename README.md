@@ -1233,13 +1233,13 @@ Congratulations, we wrote a bunch of great code!
 
 What did we do?
 
-* We implemented Chainlink VRF to get a random number
-* We defined a couple of variables that we need both for Raffle operation and for Chainlink VRF interaction
-* We have a not-so-small constructor
-* We created a method for the willing participants to enter the Raffle
-* Then made the necessary integrations with Chainlink Automation to automatically draw a winner when the time is right.
-* When the time is right and after the Chainlink nodes perform the call then Chainlink VRF will provide the requested randomness inside `fulfillRandomWords`
-* The randomness is used to find out who won, the prize is sent, raffle is reset.
+-   We implemented Chainlink VRF to get a random number
+-   We defined a couple of variables that we need both for Raffle operation and for Chainlink VRF interaction
+-   We have a not-so-small constructor
+-   We created a method for the willing participants to enter the Raffle
+-   Then made the necessary integrations with Chainlink Automation to automatically draw a winner when the time is right.
+-   When the time is right and after the Chainlink nodes perform the call then Chainlink VRF will provide the requested randomness inside `fulfillRandomWords`
+-   The randomness is used to find out who won, the prize is sent, raffle is reset.
 
 And that's all! Take a break, take a walk and come back for more fun activities. Next, we'll have deploying, testing and many refactorings!
 
@@ -1384,13 +1384,13 @@ contract RaffleTest is Test {
 
 This seems like a lot, but it isn't, let's go through it.
 
-* We made `RaffleTest` contract inherit `Test` to enable the testing functionality;
-* We've defined a `raffle` and `helperConfig` variables to store the contracts;
-* Next, we defined the variables required for the deployment;
-* Then, we created a new user called `PLAYER` and defined how many tokens they should receive;
-* Inside the `setUp` function, we deploy the `DeployRaffle` contract then we use it to deploy the `Raffle` and `HelperConfig` contracts;
-* We `deal` the `PLAYER` the defined `STARTING_USER_BALANCE`;
-* We call `helperConfig.activeNetworkConfig` to get the Raffle configuration parameters.
+-   We made `RaffleTest` contract inherit `Test` to enable the testing functionality;
+-   We've defined a `raffle` and `helperConfig` variables to store the contracts;
+-   Next, we defined the variables required for the deployment;
+-   Then, we created a new user called `PLAYER` and defined how many tokens they should receive;
+-   Inside the `setUp` function, we deploy the `DeployRaffle` contract then we use it to deploy the `Raffle` and `HelperConfig` contracts;
+-   We `deal` the `PLAYER` the defined `STARTING_USER_BALANCE`;
+-   We call `helperConfig.activeNetworkConfig` to get the Raffle configuration parameters.
 
 Amazing! With all these done let's write a small test to ensure our `setUp` is functioning properly.
 
@@ -1570,7 +1570,7 @@ function getOrCreateAnvilEthConfig()
 
 We need to treat the other side of the `(activeNetworkConfig.vrfCoordinatorV2 != address(0))` condition. What happens if that is false?
 
-If that is false we need to deploy a mock vrfCoordinatorV2\_5 and pass its address inside a `NetworkConfig` that will be used on Anvil.
+If that is false we need to deploy a mock vrfCoordinatorV2_5 and pass its address inside a `NetworkConfig` that will be used on Anvil.
 
 Please use your Explorer on the left side to access the following path:
 
@@ -1637,9 +1637,9 @@ Great! We've written some amazing code, but you know our job here is not done! W
 
 1. Write deploy scripts
 2. Write tests
-   1. Local chain
-   2. Forked Testnet
-   3. Forked Mainnet
+    1. Local chain
+    2. Forked Testnet
+    3. Forked Mainnet
 3. Maybe deploy and run on Sepolia?
 
 ### Deployment scripts
@@ -1969,7 +1969,7 @@ Great job! Let's keep going!
 
 Picking up from where we left in the previous lesson. The only point left is:
 
-``4. Our function emits the `EnteredRaffle` event.``
+`` 4. Our function emits the `EnteredRaffle` event. ``
 
 Before jumping into the test writing we need to look a bit into the cheatcode that we can use in Foundry to test events: [expectEmit](https://book.getfoundry.sh/cheatcodes/expect-emit?highlight=expectEm#expectemit).
 
@@ -1993,21 +1993,21 @@ function testEmitsEventOnEntrance() public {
 }
 ```
 
-* We prank the `PLAYER`
-* We call the `expectEmit` cheatcode - `vm.expectEmit(true, false, false, false, address(raffle));`
-  I know this looks a bit weird. But let's look at what `expectEmit` expects:
-  ```solidity
-  function expectEmit(
-    bool checkTopic1,
-    bool checkTopic2,
-    bool checkTopic3,
-    bool checkData,
-    address emitter
-  ) external;
-  ```
-  The `checkTopic` 1-3 corresponds to the `indexed` parameters we are using inside our event. The `checkData` corresponds to any unindexed parameters inside the event, and, finally, the `expectEmit` expects the address that emitted the event. It looks like this `vm.expectEmit(true, false, false, false, address(raffle));` because we only have one indexed parameter inside the event.
-* We need to manually emit the event we expect to be emitted. That's why we declared it earlier;
-* We make the function call that should emit the event.
+-   We prank the `PLAYER`
+-   We call the `expectEmit` cheatcode - `vm.expectEmit(true, false, false, false, address(raffle));`
+    I know this looks a bit weird. But let's look at what `expectEmit` expects:
+    ```solidity
+    function expectEmit(
+      bool checkTopic1,
+      bool checkTopic2,
+      bool checkTopic3,
+      bool checkData,
+      address emitter
+    ) external;
+    ```
+    The `checkTopic` 1-3 corresponds to the `indexed` parameters we are using inside our event. The `checkData` corresponds to any unindexed parameters inside the event, and, finally, the `expectEmit` expects the address that emitted the event. It looks like this `vm.expectEmit(true, false, false, false, address(raffle));` because we only have one indexed parameter inside the event.
+-   We need to manually emit the event we expect to be emitted. That's why we declared it earlier;
+-   We make the function call that should emit the event.
 
 Run the test using the following command: `forge test --mt testEmitsEventOnEntrance`
 
@@ -2015,7 +2015,7 @@ Everything passes, amazing!
 
 ## Using vm.roll and vm.warp
 
-In lesson 19, we skipped testing one of the four steps of `enterRaffle`: ``2. We check if the `RaffleState` is `OPEN`;``
+In lesson 19, we skipped testing one of the four steps of `enterRaffle`: `` 2. We check if the `RaffleState` is `OPEN`; ``
 
 To rephrase it, a user should not be able to enter if the `RaffleState` is `CALCULATING`.
 
@@ -2039,13 +2039,13 @@ We start our test exactly like the others. We `prank` the `PLAYER` and we call `
 
 The following step involves calling two new cheatcodes:
 
-* [vm.warp](https://book.getfoundry.sh/cheatcodes/warp?highlight=warp#warp) which sets the `block.timestamp`;
-* [vm.roll](https://book.getfoundry.sh/cheatcodes/roll?highlight=roll#roll) which sets the `block.number`;
+-   [vm.warp](https://book.getfoundry.sh/cheatcodes/warp?highlight=warp#warp) which sets the `block.timestamp`;
+-   [vm.roll](https://book.getfoundry.sh/cheatcodes/roll?highlight=roll#roll) which sets the `block.number`;
 
 Even though we don't use them here it's important to know that there are other `block.timestamp` manipulation cheatcodes that you'll encounter in your development/security path.
 
-* [skip](https://book.getfoundry.sh/reference/forge-std/skip) which skips forward the `block.timestamp` by the specified number of seconds;
-* [rewind](https://book.getfoundry.sh/reference/forge-std/rewind) which is the antonym of `skip`, i.e. it rewinds the `block.timestamp` by a specified number of seconds;
+-   [skip](https://book.getfoundry.sh/reference/forge-std/skip) which skips forward the `block.timestamp` by the specified number of seconds;
+-   [rewind](https://book.getfoundry.sh/reference/forge-std/rewind) which is the antonym of `skip`, i.e. it rewinds the `block.timestamp` by a specified number of seconds;
 
 So we use the `vm.warp` and `vm.roll` to push the `block.timestamp` and `block.number` in the future.
 
@@ -2556,14 +2556,14 @@ contract FundSubscription is Script, CodeConstants {
 
 This seems like a lot, but it isn't, let's go through it step by step:
 
-* Like any other Script our's has a `run` function that gets executed
-* Inside we call the `fundSubscriptionUsingConfig` function
-* Inside the `fundSubscriptionUsingConfig` function we get the `activeNetworkConfig` that provides the chain-appropriate `vrfCoordinator`, `subscriptionId` and `link` token address
-* At the end of `fundSubscriptionUsingConfig` we call the `fundSubscription`, a function that we are going to define
-* We define `fundSubscription` as a public function that takes the 3 parameters as input
-* We console log some details, this will help us debug down the road
-* Then using an `if` statement we check if we are using Anvil, if that's the case we'll use the `fundSubscription` method found inside the `VRFCoordinatorV2_5Mock`
-* If we are not using Anvil, it means we are using Sepolia. The way we fund the Sepolia `vrfCoordinator` is by using the LINK's `transferAndCall` function.
+-   Like any other Script our's has a `run` function that gets executed
+-   Inside we call the `fundSubscriptionUsingConfig` function
+-   Inside the `fundSubscriptionUsingConfig` function we get the `activeNetworkConfig` that provides the chain-appropriate `vrfCoordinator`, `subscriptionId` and `link` token address
+-   At the end of `fundSubscriptionUsingConfig` we call the `fundSubscription`, a function that we are going to define
+-   We define `fundSubscription` as a public function that takes the 3 parameters as input
+-   We console log some details, this will help us debug down the road
+-   Then using an `if` statement we check if we are using Anvil, if that's the case we'll use the `fundSubscription` method found inside the `VRFCoordinatorV2_5Mock`
+-   If we are not using Anvil, it means we are using Sepolia. The way we fund the Sepolia `vrfCoordinator` is by using the LINK's `transferAndCall` function.
 
 **Note:** The `transferAndCall` function is part of the `ERC-677 standard`, which extends the `ERC-20` token standard by adding the ability to execute a function call in the recipient contract immediately after transferring tokens. This feature is particularly useful in scenarios where you want to atomically transfer tokens and trigger logic in the receiving contract within a single transaction, enhancing efficiency and reducing the risk of reentrancy attacks. In the context of Chainlink, the LINK token implements the `transferAndCall` function. When a smart contract wants to request data from a Chainlink oracle, it uses this function to send LINK tokens to the oracle's contract address while simultaneously encoding the request details in the \_data parameter. The oracle's contract then decodes this data to understand what service is being requested.
 
@@ -2698,3 +2698,55 @@ Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 11.06ms (102.80µs 
 Amazing work!
 
 There is a lot more to do in this section, but you are a true hero for reaching this point, take a well-deserved break! See you in the next one!
+
+## Event More Tests
+
+In this lesson we are going to build a couple more tests. If we check our code coverage with `forge coverage`, the terminal will show that we are only at around 53% coverage for the `Raffle.sol` contract. Code coverage refers to the percentage of lines of code that have been tested.
+
+> 💡 **TIP**:br
+> Achieving 100% coverage isn't always required, but it is a recommended target.
+
+### `checkUpkeep` tests
+
+To improve our coverage, we need to write additional tests. For example we can address the `checkUpkeep` function, to ensure it really executes as intended under various circumstances.
+
+1. Let’s start by ensuring that `checkUpkeep` returns `false` when there is no balance. We’ll do this by setting up our test environment similarly to previous tests but without entering the raffle. Here’s the code:
+
+    ```solidity
+    function testCheckUpkeepReturnsFalseIfItHasNoBalance() public {
+            // Arrange
+            vm.warp(block.timestamp + automationUpdateInterval + 1);
+            vm.roll(block.number + 1);
+
+            // Act
+            (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+            // Assert
+            assert(!upkeepNeeded);
+     }
+    ```
+
+2. Next, we want to assert that `checkUpkeep` returns `false` when the raffle is in a _not open_ state. To do this, we can use a setup similar to our previous test:
+
+    ```solidity
+    function testCheckUpkeepReturnsFalseIfRaffleIsntOpen() public {
+            // Arrange
+            vm.prank(PLAYER);
+            raffle.enterRaffle{value: raffleEntranceFee}();
+            vm.warp(block.timestamp + automationUpdateInterval + 1);
+            vm.roll(block.number + 1);
+            raffle.performUpkeep("");
+            Raffle.RaffleState raffleState = raffle.getRaffleState();
+
+            // Act
+            (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+            // Assert
+            assert(raffleState == Raffle.RaffleState.CALCULATING);
+            assert(upkeepNeeded == false);
+     }
+    ```
+
+### Conclusion
+
+By writing these additional tests, we enhance our test coverage rate, improve the reliability of our `Raffle.sol` contract, and check that `checkUpkeep` behaves correctly under various conditions.

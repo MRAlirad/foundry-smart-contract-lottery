@@ -112,7 +112,7 @@ contract RaffleTest is Test {
         // Assert
         assert(!upkeepNeeded);
     }
-    
+
     function testPerformUpkeepCanOnlyRunIfCheckUpkeepIsTrue() public {
         // Arrange
         vm.prank(PLAYER);
@@ -124,7 +124,7 @@ contract RaffleTest is Test {
         // It doesnt revert
         raffle.performUpkeep("");
     }
-    
+
     function testPerformUpkeepRevertsIfCheckUpkeepIsFalse() public {
         // Arrange
         uint256 currentBalance = 0;
@@ -140,6 +140,26 @@ contract RaffleTest is Test {
             )
         );
         raffle.performUpkeep("");
+    }
 
+    modifier raffleEntredAndTimePassed() public {
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+    }
+
+    function testPerformUpkeepUpdatesRaffleStateAndEmitsRequestId() public raffleEntredAndTimePassed {
+        // Act
+        vm.recordLogs();
+        raffle.performUpkeep(""); // emits requestId
+        Vm.Log[] memory entries = vm.getRecordedLogs();
+        bytes32 requestId = entries[1].topics[1];
+
+        // Assert
+        Raffle.RaffleState raffleState = raffle.getRaffleState();
+        // requestId = raffle.getLastRequestId();
+        assert(uint256(requestId) > 0);
+        assert(uint(raffleState) == 1); // 0 = open, 1 = calculating
     }
 }

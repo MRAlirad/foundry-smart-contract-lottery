@@ -1,6 +1,6 @@
 # Foundry Smart Contract Lottery
 
-In this lesson, we will cover **events**, **true random numbers**, **modules**, and **automation**. You can preview the final project by cloning the repository and checking the `makefile`, which lists all the specific versions of dependencies needed to compile our contract.
+In this lesson, we will cover **events**, **true random numbers**, **modules**, and **automation**.
 
 The main contract that we'll work on will be `src/Raffle.sol`. It contains detailed comments and professional-looking NAT spec, such as:
 
@@ -18,32 +18,26 @@ We'll use **Chainlink VRF** version 2.5 for randomness. The `fulfillRandomWords`
 
 We'll also write advanced **scripts** that you can find inside the `makefile`. These include various commands to interact with the smart contract, such as creating subscriptions and adding a consumer.
 
-Let's dive in and start building this exciting project!
 
 ## Project setup
 
-For the project, we'll be working with an advanced lottery or raffle smart contract. This won't just be an exercise in coding, but a chance to learn more about:
+For the project, we'll be working with an advanced lottery or raffle smart contract. It will have the following features:
 
 -   Events
 -   On-chain randomness (done the proper way)
 -   Chainlink automation
 -   And many more!
 
-Please follow Patrick's presentation on the project we are going to build. Marvel at how good the code looks, pay attention to code structure, Natspec comments and all the other cool features.
-
-Hopefully, that sparked your interest. Now let's get cooking!
-
 ### Setup
 
-We are going to start a new foundry project. You already know how to do that, it would be great if you could do this on your own and then come back and compare your work to what's presented below. With that out of the way, please call the following commands in your terminal:
+To start a new foundry project, please call the following commands in your terminal:
 
 ```Solidity
-mkdir foundry-smart-contract-lottery-f23
-cd foundry-smart-contract-lottery-f23
-code .
+mkdir smart-contract-lottery
+cd smart-contract-lottery
 ```
 
-Inside the new VSCode instance, in the terminal, we are going to init our Foundry project:
+Init our Foundry project:
 
 ```Solidity
 forge init
@@ -51,29 +45,17 @@ forge init
 
 Please delete all the `Counter` files that are populated by default when we initiate a new Foundry project.
 
-A good practice at this stage in your project is to come up with a plan/blueprint. What do we want to do with this? What is the main functionality of the project? In the root folder create a file called `README.md` (if Foundry created one for you just delete its contents), you obviously know what this file must look like from the previous courses, but before we get there, let's just outline a simple plan.
+A good practice at this stage in your project is to come up with a plan/blueprint. What do we want to do with this? What is the main functionality of the project?
 
-Open the `README.md`:
-
-```Solidity
-
-# Proveably Random Raffle Contracts
-
-## About
-
-This code is to create a proveably random smart contract lottery.
-
-## What we want it to do?
+What we want it to do?
 
 1. Users should be able to enter the raffle by paying for a ticket. The ticket fees are going to be the prize the winner receives.
 2. The lottery should automatically and programmatically draw a winner after a certain period.
 3. Chainlink VRF should generate a provably random number.
 4. Chainlink Automation should trigger the lottery draw regularly.
-```
 
-We will introduce the Chainlink integrations in future lessons. For now, remember that we will use the Chainlink VRF service to obtain a random number, an operation that is harder than you think in the absence of a Chainlink VRF-like service. We are going to use Chainlink Automation to schedule and trigger the lottery draw programmatically.
+we will use the Chainlink VRF service to obtain a random number, an operation that is harder than you think in the absence of a Chainlink VRF-like service.
 
-**Let the development begin!**
 
 Inside the `src` folder create a file named `Raffle.sol`. Inside the newly created file, we start our new project as always:
 
@@ -102,7 +84,7 @@ contract Raffle {
 }
 ```
 
-Let's think about the structure of our project, what is the main functionality a raffle should have?
+What is the main functionality a raffle should have?
 
 1. Users should be able to enter the raffle by paying a ticket price;
 2. At some point, we should be able to pick a winner out of the registered users.
@@ -137,11 +119,9 @@ contract Raffle {
 }
 ```
 
-Did you spot that slick `/** Getter Function */`. To make our contracts extremely tidy and greatly improve readability we should use a Contract Layout. But more about this in the next lesson!
-
 ## Solidity style guide
 
-In the previous section we talked a bit about Solidity's style guide, code layouts and naming conventions. However, it's intriguing to note that we didn't fully explore how to properly order our Solidity functions. Solidity docs provide an [Order of Layout](https://docs.soliditylang.org/en/latest/style-guide.html#order-of-layout):
+Solidity docs provide an [Order of Layout](https://docs.soliditylang.org/en/latest/style-guide.html#order-of-layout):
 
 ```solidity
 // Layout of the contract file:
@@ -168,8 +148,6 @@ In the previous section we talked a bit about Solidity's style guide, code layou
 // view & pure functions
 ```
 
-Sometimes it's useful to paste this as a comment at the top of your contract to always remember it!
-
 ## Creating Custom Errors
 
 Previously we defined the `i_entranceFee` variable. This is the amount the user has to send to enter the raffle. How do we check this?
@@ -194,7 +172,7 @@ In Solidity 0.8.4 a new and more gas-efficient way has been introduced.
 
 I know we just wrote this using the `require` statement, we did that because `require` is used in a lot of projects, that you might get inspiration from or build on top of and so on. But from now on we will perform checks using the `if` statement combined with custom errors.
 
-We will refactor `enterRaffle`, but before that let's define our custom error. Be mindful of the layout we talked about in the previous lesson
+We will refactor `enterRaffle`, but before that let's define our custom error.
 
 ```solidity
 error Raffle_NotEnoughEthSent();
@@ -209,39 +187,14 @@ function enterRaffle() external payable {
 }
 ```
 
-You will see that we named the custom error using the `Raffle__` prefix. This is a very good practice that will save you a ton of time when you need to debug a protocol with 20 smart contracts. You will run your tests and then ask yourself `Ok, it failed with this error ... but where does this come from?`. Because you thought ahead and used prefixes in naming your error you won't have that problem! Awesome!
+You will see that we named the custom error using the `Raffle__` prefix. This is a very good practice that will save you a ton of time when you need to debug a protocol with 20 smart contracts. You will run your tests and then ask yourself `Ok, it failed with this error ... but where does this come from?`. Because you thought ahead and used prefixes in naming your error you won't have that problem!
 
-**Note:**
-
-**In Solidity, like in many other programming languages, you can write if statements in a single line for brevity, especially when they are simple and only execute a single statement. This is purely a stylistic choice and does not affect the functionality or performance of the code.**
-
-There is no difference between this:
-
-```solidity
-if(msg.value < i_entranceFee) revert Raffle__NotEnoughEthSent();
-```
-
-and this:
-
-```solidity
-if(msg.value < i_entranceFee) {
-    revert Raffle__NotEnoughEthSent();
-}
-```
 
 ## Smart contracts events
 
-Ok, our user paid the entrance fee, but how do we track his registration? We can't simply take the money and run! We need a storage structure that keeps track of all registered users from where to pick the winner.
+We need a storage structure that keeps track of all registered users from where to pick the winner.
+We can use and **array** to do that.
 
-Take a moment and decide what would be the best from the following:
-
-1. Mapping
-2. Array
-3. A bunch of address variables and limit the number of participants
-
-...
-
-Congratulations if you chose the **Array** option! To be more specific, a dynamic array that grows in size with each new participant. Mappings can't be looped through, and a bunch of address variables is not feasible.
 
 Add the array below the `i_entranceFee` declaration: `address payable[] private s_players;`
 
@@ -301,13 +254,9 @@ function enterRaffle() external payable {
 }
 ```
 
-Great! I know there is a possibility you don't quite understand the importance/usage of this event, but don't worry, we'll get back to it in the testing section.
-
-But before that, let's discuss randomness.
-
 ## Random numbers - Block Timestamp
 
-Going back to lesson 1, we established that one of the Raffle contract goals is `...we should be able to automatically pick a winner out of the registered users.`
+One of the Raffle contract goals is `...we should be able to automatically pick a winner out of the registered users.`
 
 What do we need to do that?
 
@@ -373,8 +322,6 @@ function pickWinner() external {
 }
 ```
 
-Don't worry! We will create a custom error for that in the next lesson. But before that let's talk randomness.
-
 ## Random numbers - Introduction to Chainlink VRF
 
 Chainlink VRF (Verifiable Random Function) is a service provided by the Chainlink network that offers secure and verifiable randomness to smart contracts on blockchain platforms. This randomness is crucial for our Raffle and for any other applications that need a source of randomness.
@@ -389,11 +336,11 @@ Chainlink VRF provides randomness in 3 steps:
 
 3. Returning the Result: The oracle returns the random number along with the cryptographic proof to the smart contract. The smart contract can then use the random number, and any external observer can verify the proof to confirm the authenticity and integrity of the randomness.
 
-Let's dive deeper. We will follow the Chainlink tutorial available [here](https://docs.chain.link/vrf/v2/subscription/examples/get-a-random-number).
+We will follow the Chainlink tutorial available [here](https://docs.chain.link/vrf/v2-5/subscription/get-a-random-number).
 
-Go to the [Chainlink Faucet](https://faucets.chain.link/sepolia) and grab yourself some test LINK and/or ETH. Make sure you connect your test account using the appropriate Sepolia Chain.
+Go to the [Chainlink Faucet](https://faucets.chain.link/sepolia) and grab yourself some test LINK and/or ETH.
 
-Go [here](https://docs.chain.link/vrf/v2/subscription/examples/get-a-random-number) and scroll down and press on the blue button that says `Open the Subscription Manager`.
+Go [here](https://docs.chain.link/vrf/v2-5/subscription/get-a-random-number) and scroll down and press on the blue button that says `Open the Subscription Manager`.
 
 Press on the blue button that says `Create Subscription`. You don't need to provide a project name or an email address, but you can if you want to.
 
@@ -403,7 +350,7 @@ The next step is adding consumers. On the same page, we clicked on the `Actions`
 
 Keep in mind that our smart contract and Chainlink VRF need to be aware of each other, which means that Chainlink needs to know the address that will consume the LINK we provided in our subscription and the smart contract needs to know the Subscription ID.
 
-Go back to the [tutorial page](https://docs.chain.link/vrf/v2/subscription/examples/get-a-random-number#create-and-deploy-a-vrf-v2-compatible-contract). Scroll down to the `Create and deploy a VRF v2 compatible contract` section. Read the short description about dependencies and pre-configured values and open the contract in Remix by pressing on `Open in Remix`.
+Go back to the [tutorial page](https://docs.chain.link/vrf/v2-5/subscription/get-a-random-number#create-and-deploy-a-vrf-compatible-contract). Scroll down to the `Create and deploy a VRF v2 compatible contract` section. Read the short description about dependencies and pre-configured values and open the contract in Remix by pressing on `Open in Remix`.
 
 ```Solidity
 For this example, use the VRFv2Consumer.sol sample contract. This contract imports the following dependencies:
@@ -508,20 +455,24 @@ function pickWinner() external {
 }
 ```
 
-Let's focus on points 1 and 2. In the previous lesson, we learned that we need to request a `randomWord` and Chainlink needs to callback one of our functions to answer the request. Let's copy the `requestId` line from the [Chainlink VRF docs](https://docs.chain.link/vrf/v2/subscription/examples/get-a-random-number#analyzing-the-contract) example inside our `pickWinner` function and start fixing the missing dependencies.
+Let's focus on points 1 and 2. In the previous lesson, we learned that we need to request a `randomWord` and Chainlink needs to callback one of our functions to answer the request. Let's copy the `requestId` line from the [Chainlink VRF docs](https://docs.chain.link/vrf/v2-5/subscription/get-a-random-number#analyzing-the-contract) example inside our `pickWinner` function and start fixing the missing dependencies.
 
 ```solidity
 function pickWinner() external {
     // check to see if enough time has passed
     if (block.timestamp - s_lastTimeStamp < i_interval) revert();
 
-    uint256 requestId = COORDINATOR.requestRandomWords(
-        keyHash,
-        s_subscriptionId,
-        requestConfirmations,
-        callbackGasLimit,
-        numWords
-    );
+    VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
+        .RandomWordsRequest({
+            keyHash,
+            subId,
+            requestConfirmations,
+            callbackGasLimit,
+            numWords,
+            extraArgs: VRFV2PlusClient._argsToBytes(
+                VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+            )
+        });
 }
 ```
 
@@ -535,35 +486,14 @@ Ok, starting from the beginning what do we need?
 Let's add the following imports:
 
 ```solidity
-import {VRFCoordinatorV2Interface} from "chainlink/src/v0.8/vrf/interfaces/VRFCoordinatorV2Interface.sol";
-import {VRFConsumerBaseV2} from "chainlink/src/v0.8/vrf/VRFConsumerBaseV2.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 ```
 
-Let's make our contract inherit the `VRFConsumerBaseV2`:
+Let's make our contract inherit the `VRFConsumerBaseV2Plus`:
 
 ```solidity
-contract Raffle is VRFConsumerBaseV2
-```
-
-Add a new immutable variable:
-
-```solidity
-// Chainlink VRF related variables
-address immutable i_vrfCoordinator;
-```
-
-I've divided the `Raffle` variables from the `Chainlink VRF` variables to keep the contract tidy.
-
-Adjust the constructor to accommodate all the new variables and imports:
-
-```solidity
-constructor(uint256 entranceFee, uint256 interval, addsress vrfCoordinator) {
-    i_entranceFee = entranceFee;
-    i_interval = interval;
-    s_lastTimeStamp = block.timestamp;
-
-    i_vrfCoordinator = vrfCoordinator;
-}
+contract Raffle is VRFConsumerBaseV2Plus
 ```
 
 For our imports to work we need to install the Chainlink library, and run the following command in your terminal:
@@ -572,7 +502,6 @@ For our imports to work we need to install the Chainlink library, and run the fo
 forge install smartcontractkit/chainlink@42c74fcd30969bca26a9aadc07463d1c2f473b8c --no-commit
 ```
 
-_P.S. I know it doesn't look amazing, bear with me._
 
 Now run `forge build`. **It will fail**, it should fail because we didn't define a ton of variables. But what matters at this point is how it fails! We need it to fail with the following error:
 
@@ -591,22 +520,16 @@ Compiler run failed:
 Error (6275): Source "lib/chainlink/contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol" not found: File not found. Searched the following locations:
 ```
 
-If you got the error above, then `forge` was not able to find out the contracts we imported. Run the following command in your terminal:
-
-```Solidity
-forge remappings>remappings.txt
-```
-
-This will create a new file that contains your project remappings:
-
 ```toml
-chainlink/=lib/chainlink/contracts/
-forge-std/=lib/forge-std/src/
+remappings = [
+    '@chainlink/=lib/chainlink/contracts/',
+    '@solmate=lib/solmate/src/'
+]
 ```
 
-This is to be read as follows: `chainlink/` in your imports becomes `lib/chainlink/contracts/` behind the stage. We need to make sure that if we apply that change to our import the resulting **PATH is correct**.
+This is to be read as follows: `@chainlink/` in your imports becomes `lib/chainlink/contracts/` behind the stage. We need to make sure that if we apply that change to our import the resulting **PATH is correct**.
 
-`chainlink/src/v0.8/vrf/VRFConsumerBaseV2.sol` becomes `lib/chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol`, which is correct. Sometimes some elements of the PATH are either missing or doubled, as follows:
+`chainlink/src/v0.8/vrf/VRFConsumerBaseV2Plus.sol` becomes `lib/chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2Plus.sol`, which is correct. Sometimes some elements of the PATH are either missing or doubled, as follows:
 
 `lib/chainlink/contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol`
 
@@ -615,10 +538,6 @@ or
 `lib/chainlink/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol`
 
 Both these variants are **incorrect**. You need to always be able to access the PATH in your explorer window on the left, if you can't then you need to adjust the remappings to match the lib folder structure.
-
-Great, now that we were successfully able to run the imports let's continue fixing the missing variables.
-
-Don't ever be afraid of calling `forge build` even if you know your project won't compile. Our contract lacks some variables that are required inside the `pickWinner` function. Call `forge build`.
 
 Output:
 
@@ -654,70 +573,54 @@ Error (7576): Undeclared identifier.
 59 |                 numWords: numWords, // number random numbers
 ```
 
-At least now we know what's left \:smile:
+At least now we know what's left.
 
 Let's add the above-mentioned variables inside the VRF state variables block:
 
 ```solidity
 // Chainlink VRF related variables
-VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
-bytes32 private immutable i_gasLane;
-uint64 private immutable i_subscriptionId;
+bytes32 private immutable i_keyhash;
+uint256 private immutable i_subscriptionId;
 uint16 private constant REQUEST_CONFIRMATIONS = 3;
 uint32 private immutable i_callbackGasLimit;
 uint32 private constant NUM_WORDS = 1;
 ```
-
-We have changed the `keyHash` name to `i_gasLane` which is more descriptive for its purpose. Also, we've changed the type of `i_vrfCoordinator`. For our `pickWinner` function to properly call `uint256 requestId = i_vrfCoordinator.requestRandomWords(` we need that `i_vrfCoordinator` to be a contract, specifically the `VRFCoordinatorV2Interface` contract that we've imported.
 
 For simplicity we request only 1 word, thus we make that variable constant. The same goes for request confirmations, this number can vary depending on the blockchain we chose to deploy to but for mainnet 3 is perfect. Cool!
 
 The next step is to attribute values inside the constructor:
 
 ```solidity
-constructor(uint256 entranceFee, uint256 interval, address vrfCoordinator, bytes32 gasLane, uint64 subscriptionId, uint32 callbackGasLimit) VRFConsumerBaseV2(vrfCoordinator) {
-    i_entranceFee = entranceFee;
-    i_interval = interval;
-    s_lastTimeStamp = block.timestamp;
-
-    i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinator);
-    i_gasLane = gasLane;
-    i_subscriptionId = subscriptionId;
-    i_callbackGasLimit = callbackGasLimit;
-}
+    constructor(
+        uint256 entranceFee,
+        uint256 interval,
+        address vrfCoordinator,
+        bytes32 gasLane,
+        uint256 subscriptionId,
+        uint32 callbackGasLimit
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
+        i_entranceFee = entranceFee;
+        i_interval = interval;
+        i_keyhash = gasLane;
+        i_subscriptionId = subscriptionId;
+        i_callbackGasLimit = callbackGasLimit;
+        s_lastTimeStamp = block.timestamp;
+    }
 ```
 
-Ok, breathe, it's a lot but it's not complicated, let's go through it together:
-
--   First, we need to initiate the VRFConsumerBaseV2 using our constructor `VRFConsumerBaseV2(vrfCoordinator)`;
 -   We are providing the `gasLane`, `subscriptionId` and `callbackGasLimit` in our input section of the constructor;
 -   We are assigning the inputted values to the state variables we defined at an earlier point;
--   We are casting the `vrfCoordinator` address as `VRFCoordinatorV2Interface` to be able to call it inside the `pickWinner` function.
 
-The last step is to create a new function:
 
 ```solidity
-function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {}
+function fulfillRandomWords(
+    uint256 requestId,
+    uint256[] calldata randomWords
+) internal override {}
 ```
 
 This will be called by the `vrfCoordinator` when it sends back the requested `randomWords`. This is also where we'll select our winner!
 
-Call the `forge build` again.
-
-```Solidity
-[⠒] Compiling...
-[⠔] Compiling 9 files with Solc 0.8.25
-[⠒] Solc 0.8.25 finished in 209.77ms
-Compiler run successful with warnings:
-Warning (2072): Unused local variable.
-  --> src/Raffle.sol:61:9:
-   |
-61 |         uint256 requestId = i_vrfCoordinator.requestRandomWords(
-   |         ^^^^^^^^^^^^^^^^^
-
-```
-
-Perfect! Don't worry. We will use that `requestId` in a future lesson.
 
 ## Implementing Vrf Fulfil
 
@@ -783,7 +686,6 @@ This means that the player with index 1 (`s_players[1]`) is the winner of our ra
 
 ### Picking the winner
 
-Enough theory, let's implement it in code!
 
 ```solidity
 function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
@@ -799,10 +701,9 @@ function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) int
     uint256 indexOfWinner = randomWords[0] % s_players.length;
     address payable winner = s_players[indexOfWinner];
     s_recentWinner = winner;
+
     (bool success,) = winner.call{value:address(this).balance}("");
-    if (!success) {
-        revert Raffle__TransferFailed();
-    }
+    if (!success) revert Raffle__TransferFailed();
 }
 ```
 
@@ -824,11 +725,7 @@ address payable private s_recentWinner;
 
 In Solidity, `enum` stands for Enumerable. It is a user-defined data type that restricts a variable to have only one of the predefined values listed within the enum declaration. These predefined values are internally treated as unsigned integers, starting from 0 up to the count of elements minus one. Enums are useful for improving code readability and reducing potential errors by limiting the range of acceptable values for a variable. Read more about enums [here](https://docs.soliditylang.org/en/v0.8.26/types.html#enums).
 
-**How can we use enums in our Project?**
-
 Let's think about all the possible states of our Raffle. We deploy the contract and the raffle is started, the participants buy a ticket to register. Let's call this state `OPEN`. After this, we have a period when we need to wait at least 3 blocks for Chainlink VRF to send us the random number this means that we have at least 36 seconds (12 seconds/block) of time when our Raffle is processing the winner. Let's call this state `CALCULATING`.
-
-Let's code all these!
 
 Paste the following code between the errors definition section and the state variables section:
 
@@ -840,18 +737,14 @@ enum RaffleState {
 }
 
 // Put this one in `Raffle related variables`
-RaffleState private s_raffleState;
+    ;
 ```
-
-Amazing, let's default our raffle state to open inside the constructor.
 
 Add the following inside your constructor:
 
 ```solidity
 s_raffleState = RaffleState.OPEN;
 ```
-
-Amazing! But what's the reason we did all this? Security! The thing we love the most!
 
 Chainlink VRF has an [interesting page](https://docs.chain.link/vrf/v2-5/security) where they provide Security Considerations you should always implement when interacting with their service. One of these is called `Don't accept bids/bets/inputs after you have made a randomness request`, in our case this translates to `Don't let people buy tickets while we calculate the final winner`. I strongly encourage you to give that whole page a read, it will save you a lot of headaches.
 
@@ -895,13 +788,9 @@ function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) int
 }
 ```
 
-I know you thought about it: `But why are we opening the Raffle again? We've selected a winner but the s_players array is still full!` And you are right!
-
-We will take care of this in the next lesson!
-
 ## Lottery restart - Resetting an Array
 
-Continuing from where we left in the last lesson. We've picked the winner, we've opened the lottery and ... what do we do with the players already in the array? They've had their chance to win and they didn't.
+ We've picked the winner, we've opened the lottery and ... what do we do with the players already in the array? They've had their chance to win and they didn't.
 
 We add the following line inside the `fulfillRandomWords` function:
 
@@ -925,21 +814,7 @@ And emit it as the last line of the `fulfillRandomWords` function: `emit PickedW
 
 Run a `forge build` to make sure everything compiles.
 
-## Tutorials vs Real-World Smart-Contract Building
-
-When it comes to building solidity projects, things may seem a bit too linear or straightforward when you watch a demo or read a tutorial. Looking at a video where Patrick streamlines a project from start to finish and his code compiling from the first try 99.9% of the time might give you the wrong idea of how this process normally goes.
-
-Keep in mind that Patrick built this project or a close version of it using Solidity + Brownie, Solidity + Hardhat and now Solidity + Foundry and probably updated them multiple times to adjust for different changes in Solidity versions, VRF versions and so on. When building something completely new, Patrick, like any other smart contract developer, doesn't do it seamlessly or in one go.
-
-Normally, when you start building a new project, you will write 1-2 functions and then try to compile it ... and BAM, it doesn't compile, you go and fix that and then you write a couple of tests to ensure the functionality you intend is there ... and some of these tests fail. Why do they fail? You go back to the code, make some changes, compile it again, test it again and hopefully everything passes. Amazing, you just wrote your first 1-2 functions, your project will most likely need 10 more. This might look cumbersome, but it's the best way to develop a smart contract, far better than trying to punch in 10 functions and then trying to find out where's the bug that prevents the contract from compiling. The reason why Patrick is not testing every single thing on every single step is, as you've guessed, the fact that the contract will be refactored over and over again, and testing a function that will be heavily modified two lessons from now is not that efficient.
-
-**_You won't develop smart contracts without setbacks. And that is ok!_**
-
-**_Setbacks are not indicators of failure, they are signs of growth and learning._**
-
 ## The Checks-Effects-Interactions (CEI) Pattern
-
-A very important thing to note. When developing this contract Patrick is using a style called Checks-Effects-Interactions or CEI.
 
 The Checks-Effects-Interactions pattern is a crucial best practice in Solidity development aimed at enhancing the security of smart contracts, especially against reentrancy attacks. This pattern structures the code within a function into three distinct phases:
 

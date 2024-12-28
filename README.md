@@ -855,45 +855,10 @@ First, we do the checks, if something goes bad we revert, but we don't spend tha
 
 ## Introduction to Chainlink Automation
 
-Amazing work! Our project starts looking good!
-
 Looking through it we can see that there's an obvious problem. For the winner to be picked we need someone to call `pickWinner`. Manually calling this day after day is not optimal, and we, as engineers, need to come up with a better solution! Let's discuss Chainlink Automation!
 
 **Chainlink Automation** is a decentralized service designed to automate key functions and DevOps tasks within smart contracts in a highly reliable, trust-minimized, and cost-efficient manner. It allows smart contracts to automatically execute transactions based on predefined conditions or schedules.
 
-This lesson will be centered on creating a time-based automation using Chainlink's UI. The relevant section in the documentation starts [here](https://docs.chain.link/chainlink-automation/guides/compatible-contracts) and [here](https://docs.chain.link/chainlink-automation/guides/job-scheduler).
-
-In this video, Richard provides a walkthrough on Chainlink’s Keepers, starting with how to connect a wallet from the Chainlink Keepers UI, registering a new upkeep, and implementing time-based trigger mechanisms.
-
-Let's open the contract available [here](https://docs.chain.link/chainlink-automation/guides/compatible-contracts#example-automation-compatible-contract-using-custom-logic-trigger) in Remix by pressing the `Open in Remix` button.
-
-Following Richard's tutorial let's delete the `is AutomationCompatibleInterface` inheritance, both the `interval` and `lastTimeStamp` variables, adjust the constructor and delete both available functions. Create a new function called `count` which increments the `counter` state variable. It should look like this:
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
-
-
-contract Counter {
-
-    uint256 public counter;
-
-    constructor() {
-        counter = 0;
-    }
-
-    function count() external {
-        counter = counter + 1;
-    }
-
-}
-```
-
-Wow! This is all we need!
-
-Let's deploy this contract on Sepolia. If you are brave enough follow Richard and deploy it to Fuji Avalanche.
-
-Amazing! Check if the counter is 0 by clicking on it! Also check if the `count` function works by clicking it, signing the transaction and then clicking `counter` again.
 
 Open up the [Chainlink Automation link](https://automation.chain.link/) and press the blue button saying `Register new Upkeep`. Connect your wallet. Now we are asked to select a trigger for the automation. Please select `Time-based`. At the next step, we are asked to provide a `Target contract address` and copy-paste the address of the contract we just deployed on Sepolia.
 
@@ -934,8 +899,6 @@ no words
 
 You can find out more about how to properly craft these by playing around with [crontab.guru](https://crontab.guru/) or using your favorite AI chatbot. Even better, you could ask the AI chatbot to craft it for you!
 
-I've configured mine to work every two minutes: `*/2 * * * *`.
-
 After you provide the Cron expression press `Next`.
 
 Now we got to the `Upkeep details` section. Give it a name. The `Admin Address` should be defaulted to the address you used to deploy the contract. You should have some test LINK there. If you don't have any pick some up from [here](https://faucets.chain.link/sepolia). You have the option of specifying a `Gas limit`. Specify a `Starting balance`, I've used 10 LINK. You don't need to provide a project name or email address.
@@ -948,13 +911,10 @@ In the `History` section, you can see the exact date and tx hash of the automate
 
 From time to time go back to Remix and check the `counter` value. You'll see it incremented with a number corresponding to the number of calls visible in the `History` we talked about earlier.
 
-Ok, this was fun, let's pause/cancel the upkeep to save some of that sweet testnet LINK.
-
 ## Implementing Chainlink Automation
 
-Remember how Richard deleted the `performUpkeep` and `checkUpkeep` in the previous videos ... we gonna need those if we want to use the Chainlink Automation without interacting with Chainlink's front-end. We are engineers, we do not use front-ends!
 
-For this to work we need to refactor the `pickWinner` function. That functionality needs to be part of the `performUpkeep` if we want the Chainlink node to call it for us. But before that, let's create the `checkUpkeep` function:
+We need to refactor the `pickWinner` function. That functionality needs to be part of the `performUpkeep` if we want the Chainlink node to call it for us. But before that, let's create the `checkUpkeep` function:
 
 ```solidity
 /**
@@ -968,29 +928,27 @@ For this to work we need to refactor the `pickWinner` function. That functionali
  * 5. Implicity, your subscription is funded with LINK.
  */
 function checkUpkeep(bytes memory /* checkData */) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
-    bool isOpen = RaffleState.OPEN == s_raffleState;
+    bool isOpen = s_raffleState == RaffleState.OPEN;
     bool timePassed = ((block.timestamp - s_lastTimeStamp) >= i_interval);
     bool hasPlayers = s_players.length > 0;
     bool hasBalance = address(this).balance > 0;
+
     upkeepNeeded = (timePassed && isOpen && hasBalance && hasPlayers);
     return (upkeepNeeded, "0x0");
 }
 ```
 
-Again, a lot of things up there, but fear not, we are going to explain everything.
 
-Going back to the [Chainlink Automation tutorial](https://docs.chain.link/chainlink-automation/guides/compatible-contracts) we see that `checkUpkeep` can use onchain data and a specified `checkData` parameter to perform complex calculations offchain and then send the result to `performUpkeep` as `performData`. But in our case, we don't need that `checkData` parameter. If a function expects an input, but we are not going to use it we can comment it out like this: `/* checkData */`. Ok, moving on, we'll make `checkUpkeep` public view and we match the expected returns of `(bool upkeepNeeded, bytes memory /* performData */)` commenting out that `performData` because we aren't going to use it.
-
-You are amazing! Keep going!
+Going back to the [Chainlink Automation tutorial](https://docs.chain.link/chainlink-automation/guides/compatible-contracts) we see that `checkUpkeep` can use onchain data and a specified `checkData` parameter to perform complex calculations offchain and then send the result to `performUpkeep` as `performData`. But in our case, we don't need that `checkData` parameter. If a function expects an input, but we are not going to use it we can comment it out like this: `/* checkData */`. we'll make `checkUpkeep` public view and we match the expected returns of `(bool upkeepNeeded, bytes memory /* performData */)` commenting out that `performData` because we aren't going to use it.
 
 Back to our raffle now, what are the conditions required to be true in order to commence the winner-picking process? We've placed the answer to this in the NATSPEC comments.
 
 ```solidity
- * 1. The time interval has passed between raffle runs.
- * 2. The lottery is open.
- * 3. The contract has ETH.
- * 4. There are players registered.
- * 5. Implicity, your subscription is funded with LINK.
+    * 1. The time interval has passed between raffle runs.
+    * 2. The lottery is open.
+    * 3. The contract has ETH.
+    * 4. There are players registered.
+    * 5. Implicity, your subscription is funded with LINK.
 ```
 
 For points 1-3 we coded the following lines:
@@ -1012,32 +970,31 @@ return (upkeepNeeded, "0x0");
 
 `"0x0"` is just `0` in `bytes`, we ain't going to use this return anyway.
 
-Amazing!
-
 Chainlink nodes will call this `checkUpkeep` function. If the return `upkeepNeeded` is true, then they will call `performUpkeep` ... which in our case is the `pickWinner` function. Let's refactor it a little bit:
 
 ```solidity
 // 1. Get a random number
 // 2. Use the random number to pick a player
 // 3. Automatically called
-function performUpkeep(bytes calldata /* performData */) external override {
+function performUpkeep(bytes calldata /* performData */) external {
     (bool upkeepNeeded, ) = checkUpkeep("");
-    // require(upkeepNeeded, "Upkeep not needed");
-    if (!upkeepNeeded) {
-        revert Raffle__UpkeepNotNeeded(
-            address(this).balance,
-            s_players.length,
-            uint256(s_raffleState)
-        );
-    }
+    if(!upkeepNeeded) revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
+
     s_raffleState = RaffleState.CALCULATING;
-    uint256 requestId = i_vrfCoordinator.requestRandomWords(
-        i_gasLane,
-        i_subscriptionId,
-        REQUEST_CONFIRMATIONS,
-        i_callbackGasLimit,
-        NUM_WORDS
-    );
+
+    VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
+        .RandomWordsRequest({
+            keyHash: i_keyhash,
+            subId: i_subscriptionId,
+            requestConfirmations: REQUEST_CONFIRMATIONS,
+            callbackGasLimit: i_callbackGasLimit,
+            numWords: NUM_WORDS,
+            extraArgs: VRFV2PlusClient._argsToBytes(
+                VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+            )
+        });
+
+    uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
 }
 ```
 
@@ -1055,44 +1012,18 @@ For that we will make the function perform a call to `checkUpkeep`:
 And we check it's result. If the result is false we revert with a new custom error:
 
 ```solidity
-if (!upkeepNeeded) {
-    revert Raffle__UpkeepNotNeeded(
-        address(this).balance,
-        s_players.length,
-        uint256(s_raffleState)
-    );
-}
+if(!upkeepNeeded) revert Raffle__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffleState));
 ```
 
 Let's define it at the top of the contract, next to the other errors:
 
 ```solidity
-error Raffle__UpkeepNotNeeded(
-    uint256 currentBalance,
-    uint256 numPlayers,
-    uint256 raffleState
-);
+error Raffle__UpkeepNotNeeded(uint256 balance, uint256 playersLength, uint256 raffleState);
 ```
 
 This is the first time when we provided some parameters to the error. Think about them as extra info you get when you receive the error.
 
 **Note: you can do both** **`uint256 raffleState`** **or** **`RaffleState raffleState`** **because these are directly convertible.**
-
-We leave the rest of the function intact.
-
-Another thing that we should do is to import the `AutomationCompatibleInterface`:
-
-```solidity
-import {AutomationCompatibleInterface} from "chainlink/src/v0.8/automation/interfaces/AutomationCompatibleInterface.sol";
-```
-
-and let's make our contract inherit it:
-
-```solidity
-contract Raffle is VRFConsumerBaseV2, AutomationCompatibleInterface {
-```
-
-Now let's call a `forge build` to see if everything is ok.
 
 ## Custom Error with parameters
 
@@ -1104,8 +1035,6 @@ Raffle__UpkeepNotNeeded(address balance, uint256 length, uint256 raffleState);
 
 ## Quick recap
 
-Congratulations, we wrote a bunch of great code!
-
 What did we do?
 
 -   We implemented Chainlink VRF to get a random number
@@ -1116,7 +1045,6 @@ What did we do?
 -   When the time is right and after the Chainlink nodes perform the call then Chainlink VRF will provide the requested randomness inside `fulfillRandomWords`
 -   The randomness is used to find out who won, the prize is sent, raffle is reset.
 
-And that's all! Take a break, take a walk and come back for more fun activities. Next, we'll have deploying, testing and many refactorings!
 
 ## Deploying and testing our lottery
 
@@ -1301,10 +1229,6 @@ Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 12.42ms (51.80µs C
 Ran 1 test suite in 2.25s (12.42ms CPU time): 1 tests passed, 0 failed, 0 skipped (1 total tests)
 ```
 
-Ok, so our Raffle starts in an OPEN state. Exactly like we coded it!
-
-Great job! We started testing, let's see what we can do next!
-
 ## Deploy Script
 
 Let's begin by creating a new file in the `/script` directory called `DeployRaffle.sol` and importing the `Raffle` contract.
@@ -1459,7 +1383,7 @@ Add the following line in the imports section of `HelperConfig.s.sol`:
 import {VRFCoordinatorV2_5Mock} from "chainlink/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 ```
 
-Amazing! Now let's keep on working on the `getOrCreateAnvilEthConfig` function. We need to deploy the `vrfCoordinatorV2Mock`, but if we open it we'll see that its constructor requires some parameters:
+Now let's keep on working on the `getOrCreateAnvilEthConfig` function. We need to deploy the `vrfCoordinatorV2Mock`, but if we open it we'll see that its constructor requires some parameters:
 
 ```solidity
 contract VRFCoordinatorV2_5Mock is SubscriptionAPI, IVRFCoordinatorV2Plus {
@@ -1488,7 +1412,7 @@ VRFCoordinatorV2_5Mock vrfCoordinatorMock = new VRFCoordinatorV2_5Mock(
 vm.stopBroadcast();
 ```
 
-Amazing! Now that we have everything we need, let's perform the return, similar to what we did in `getSepoliaEthConfig`.
+Now that we have everything we need, let's perform the return, similar to what we did in `getSepoliaEthConfig`.
 
 ```solidity
 return NetworkConfig({
@@ -1502,11 +1426,9 @@ return NetworkConfig({
 });
 ```
 
-Great! Now this is fixed let's continue testing and deploying our Raffle contract.
-
 ## Test and deploy the lottery smart contract pt.2
 
-Great! We've written some amazing code, but you know our job here is not done! We need to test it. Let's be smart about testing, what do we need to be able to properly test the contract and what kind of tests shall we do?
+We've written some amazing code, but you know our job here is not done! We need to test it. Let's be smart about testing, what do we need to be able to properly test the contract and what kind of tests shall we do?
 
 **Plan:**
 
@@ -1559,7 +1481,7 @@ contract HelperConfig is Script {
         uint256 interval;
         address vrfCoordinator;
         bytes32 gasLane;
-        uint64 subscriptionId;
+        uint256 subscriptionId;
         uint32 callbackGasLimit;
     }
 

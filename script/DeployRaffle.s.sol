@@ -2,9 +2,9 @@
 pragma solidity ^0.8.19;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Raffle} from '../src/Raffle.sol';
-import {HelperConfig} from './HelperConfig.s.sol';
-import {CreateSubscription, FundSubscription, AddConsumer} from "./Interactions.s.sol";
+import {Raffle} from "src/Raffle.sol";
+import {HelperConfig} from "script/HelperConfig.s.sol";
+import {CreateSubscription, FundSubscription, AddConsumer} from "script/Interactions.s.sol";
 
 contract DeployRaffle is Script {
     function run() external {
@@ -19,9 +19,9 @@ contract DeployRaffle is Script {
             // create subscription
             CreateSubscription createSubscription = new CreateSubscription();
             (uint256 subId, address vrfCoordinator) = createSubscription.createSubscription(config.vrfCoordinator);
-            config.subscriptionId = uint64(subId);
+            config.subscriptionId = subId;
             config.vrfCoordinator = vrfCoordinator;
-            
+
             // fund subscription
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(config.vrfCoordinator, config.subscriptionId, config.link);
@@ -37,11 +37,9 @@ contract DeployRaffle is Script {
             callbackGasLimit : config.callbackGasLimit
         });
         vm.stopBroadcast();
-        
-        console.log('asfasdfsadfsdafasdfsadf');
-        
+
         AddConsumer addConsumer = new AddConsumer();
-        addConsumer.addConsumer(address(raffle), config.vrfCoordinator, uint64(config.subscriptionId));
+        addConsumer.addConsumer(address(raffle), config.vrfCoordinator, config.subscriptionId);
 
         return (raffle, helperConfig);
     }

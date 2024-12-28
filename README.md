@@ -4308,3 +4308,28 @@ Suite result: ok. 1 passed; 0 failed; 0 skipped; finished in 11.59ms (84.60µs C
 You can see the `Debugging at its finest` message at the end of the log. Super nice!
 
 **Note:** Make sure to delete those before deploying to mainnet, because this will cost gas, and you do not want to spend that!
+
+## Debug using forge test
+
+### Debugging using the forge debug tool
+
+One other tool that we didn't properly introduce until now is `forge test --debug`.
+
+Run `forge test --debug testRaffleRecordsPlayerWhenTheyEnter`.
+
+I know this looks a bit scary, but it isn't!
+
+In this view, you can go OPCODE by OPCODE to check each super granular step of your function execution. It's something that it's not recommended to do at the beginning of your developer journey. But with time, after you accumulate some more knowledge and maybe finish the Section about Yul, Huff and OPCODES, you will be super comfortable. I guarantee it!
+
+For now, just know how to access this view.
+### Debugging using the forge debug tool
+
+One other tool that we didn't properly introduce until now is `forge test --debug`.
+
+Run `forge test --debug testRaffleRecordsPlayerWhenTheyEnter`.
+
+I know this looks a bit scary, but it isn't!
+
+In this view, you can go OPCODE by OPCODE to check each super granular step of your function execution. It's something that it's not recommended to do at the beginning of your developer journey. But with time, after you accumulate some more knowledge and maybe finish the Section about Yul, Huff and OPCODES, you will be super comfortable. I guarantee it!
+
+For now, just know how to access this view.
